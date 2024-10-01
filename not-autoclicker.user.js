@@ -1,16 +1,33 @@
 // ==UserScript==
 // @name         Not Pixel Autoclicker
-// @namespace    Violentmonkey Scripts
 // @match        *://*.notpx.app/*
+// @namespace    s0k1l1k scripts
 // @version      2.0
 // @grant        none
 // @icon         https://notpx.app/favicon.ico
-// @downloadURL  https://github.com/mudachyo/Not-Pixel/raw/main/not-autoclicker.user.js
-// @updateURL    https://github.com/mudachyo/Not-Pixel/raw/main/not-autoclicker.user.js
-// @homepage     https://github.com/mudachyo/Not-Pixel
+// @downloadURL  https://github.com/s0k1l1k/Not-Pixel-Bot/raw/main/not-autoclicker.user.js
+// @updateURL    https://github.com/s0k1l1k/Not-Pixel-Bot/raw/main/not-autoclicker.user.js
+// @homepage     https://github.com/s0k1l1k/Not-Pixel-Bot
 // ==/UserScript==
 
-// Ожидание элемента
+const GAME_SETTINGS = {
+  minDelay: 1000, // 1 second
+  maxDelay: 2000, // 2 seconds
+  minPauseDuration: 60000, // 1 minute
+  maxPauseDuration: 180000, // 3 minutes
+  pauseUntil: null,
+  autoClaimEnabled: false,
+  autoClaimMinDelay: 120000, // 2 minutes
+  autoClaimMaxDelay: 600000, // 10 minutes
+  autoChangeColorEnabled: false,
+  autoChangeColorMinDelay: 120000, // 2 minutes
+  autoChangeColorMaxDelay: 600000, // 10 minutes
+  nightStopEnabled: true,
+};
+
+const NIGHT_STOP_START = 22; // 10 PM
+const NIGHT_STOP_END = 6; // 6 AM
+
 function waitForElement(selector, callback) {
   const element = document.querySelector(selector);
   if (element) {
@@ -61,10 +78,46 @@ function openPaintWindow() {
   });
 }
 
+function checkNightStop() {
+  if (!GAME_SETTINGS.nightStopEnabled) {
+    hideNightStopIndicator()
+    return false;
+  }
+
+  const date = new Date();
+  const hours = date.getHours();
+  let isNightStop = hours < NIGHT_STOP_END || hours >= NIGHT_STOP_START;
+
+  if (isNightStop) {
+    const nightStopIndicator = document.getElementById('night-stop-indicator');
+    if (nightStopIndicator) {
+      nightStopIndicator.style.display = 'block';
+    }
+  } else {
+    hideNightStopIndicator();
+  }
+
+  return isNightStop;
+}
+
+function hideNightStopIndicator() {
+  const nightStopIndicator = document.getElementById('night-stop-indicator');
+  if (nightStopIndicator) {
+    nightStopIndicator.style.display = 'none';
+  }
+}
+
 // Случайный клик
 function randomClick() {
   if (isClickInProgress) {
       return;
+  }
+
+  if (checkNightStop()) {
+    console.log('Night stop is enabled');
+    isClickInProgress = false;
+    setTimeout(randomClick, 1000);
+    return;
   }
 
   isClickInProgress = true;
@@ -164,20 +217,6 @@ function startScript() {
 }
 
 startScript();
-
-const GAME_SETTINGS = {
-  minDelay: 1000, // 1 секунда
-  maxDelay: 2000, // 2 секунды
-  minPauseDuration: 60000, // 1 минута
-  maxPauseDuration: 180000, // 3 минуты
-  pauseUntil: null, // По умолчанию пауза не установлена
-  autoClaimEnabled: false, // По умолчанию автозабор награды выключен
-  autoClaimMinDelay: 120000, // 2 минуты
-  autoClaimMaxDelay: 600000, // 10 минут
-  autoChangeColorEnabled: false, // По умолчанию автосмена цвета выключена
-  autoChangeColorMinDelay: 120000, // 2 минуты
-  autoChangeColorMaxDelay: 600000 // 10 минут
-};
 
 // Автозабор награды
 function autoClaimReward() {
@@ -350,6 +389,7 @@ function updateSettingsMenu() {
   document.getElementById('maxPauseDurationDisplay').textContent = GAME_SETTINGS.maxPauseDuration / 1000 + 's';
   document.getElementById('autoClaimEnabled').checked = GAME_SETTINGS.autoClaimEnabled;
   document.getElementById('autoChangeColorEnabled').checked = GAME_SETTINGS.autoChangeColorEnabled;
+  document.getElementById('nightStopEnabled').checked = GAME_SETTINGS.nightStopEnabled;
 }
 
 settingsMenu.appendChild(createSettingElement('Min delay (s)', 'minDelay', 'range', 100, 5000, 100,
@@ -364,6 +404,8 @@ settingsMenu.appendChild(createCheckboxSetting('Enable Auto Claim', 'autoClaimEn
   'Automatically claims the reward when it is available.'));
 settingsMenu.appendChild(createCheckboxSetting('Enable Auto Change Color', 'autoChangeColorEnabled',
   'Automatically changes the drawing color randomly.'));
+settingsMenu.appendChild(createCheckboxSetting('Enable Night Stop', 'nightStopEnabled',
+  'Do not click during the night time.'));
 
 const pauseResumeButton = document.createElement('button');
 pauseResumeButton.textContent = 'Pause';
@@ -392,6 +434,14 @@ socialButtons.appendChild(githubButton);
 settingsMenu.appendChild(socialButtons);
 
 document.body.appendChild(settingsMenu);
+
+// Create and add to body Night stop indicator
+const nightStopIndicator = document.createElement('div');
+nightStopIndicator.id = 'night-stop-indicator';
+nightStopIndicator.className = 'night-stop';
+nightStopIndicator.style.display = 'none';
+nightStopIndicator.textContent = '🌙 Night stop from ' + NIGHT_STOP_START + ' to ' + NIGHT_STOP_END;
+document.body.appendChild(nightStopIndicator);
 
 const settingsButton = document.createElement('button');
 settingsButton.className = 'settings-button';
@@ -549,6 +599,18 @@ style.textContent = `
       width: 16px;
       height: 16px;
       margin-right: 5px;
+  }
+  .night-stop {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: rgba(255, 0, 0, 0.5);
+      padding: 6px 12px;
+      color: #fff;
+      z-index: 9999;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 4px;
   }
   .settings-button {
       position: fixed;
