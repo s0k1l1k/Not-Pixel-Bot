@@ -71,8 +71,9 @@ function randomClick() {
 
   checkPause();
   if (isAutoclickerPaused) {
+      console.log('Autoclicker is paused');
       isClickInProgress = false;
-      setTimeout(randomClick, 1000); // Проверка паузы
+      setTimeout(randomClick, 1000);
       return;
   }
   
@@ -99,13 +100,8 @@ function randomClick() {
       });
     } else if (buttonText === 'No energy') {
       if (noEnergyTimeout === null) {
-        const randomPause = getRandomDelay(GAME_SETTINGS.minPauseDuration, GAME_SETTINGS.maxPauseDuration);
-        console.log(`Нет энергии. Рандомная пауза: ${randomPause} мс.`);
-        noEnergyTimeout = setTimeout(() => {
-          noEnergyTimeout = null;
-          isClickInProgress = false;
-          randomClick();
-        }, randomPause);
+        console.log(`No Energy.`);
+        pauseAutoclicker();
       } else {
         isClickInProgress = false;
         setTimeout(randomClick, 1000); // Проверяем каждую секунду
@@ -408,6 +404,7 @@ settingsButton.className = 'settings-button';
 settingsButton.textContent = '⚙️';
 settingsButton.onclick = () => {
   settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+  updatePauseResumeButton();
 };
 settingsButton.ontouchstart = (e) => {
   e.preventDefault();
@@ -790,17 +787,43 @@ let noEnergyTimeout = null;
 
 // Переключение паузы
 function toggleAutoclicker() {
-  isAutoclickerPaused = !isAutoclickerPaused;
-  updatePauseResumeButton();
-  
-  if (!isAutoclickerPaused) {
-      setTimeout(randomClick, getRandomDelay(GAME_SETTINGS.minDelay, GAME_SETTINGS.maxDelay));
+  if (isAutoclickerPaused) {
+    resumeAutoclicker()
+  } else {
+    pauseAutoclicker();
   }
+
+  updatePauseResumeButton();
 }
 
-// Обновление кнопки паузы
+function pauseAutoclicker() {
+  const randomPause = getRandomDelay(GAME_SETTINGS.minPauseDuration, GAME_SETTINGS.maxPauseDuration);
+  isAutoclickerPaused = true;
+  console.log(`Puase set for ${randomPause} ms.`);
+  noEnergyTimeout = setTimeout(() => {
+    noEnergyTimeout = null;
+    isClickInProgress = false;
+    randomClick();
+  }, randomPause);
+  GAME_SETTINGS.pauseUntil = Date.now() + randomPause;
+  updatePauseResumeButton()
+}
+
+function resumeAutoclicker() {
+  console.log(`Resume autoclicker.`);
+  isAutoclickerPaused = false;
+  if (noEnergyTimeout) {
+    console.log(`Removing previous no energy timeout.`);
+    clearTimeout(noEnergyTimeout);
+    noEnergyTimeout = null;
+  }
+  isClickInProgress = false;
+  GAME_SETTINGS.pauseUntil = null;
+  setTimeout(randomClick, 1000);
+}
+
 function updatePauseResumeButton() {
-  pauseResumeButton.textContent = isAutoclickerPaused ? 'Resume' : 'Pause';
+  pauseResumeButton.textContent = isAutoclickerPaused ? 'Resume' : 'Set Random Pause';
   pauseResumeButton.style.backgroundColor = isAutoclickerPaused ? '#e5c07b' : '#98c379';
 }
 
