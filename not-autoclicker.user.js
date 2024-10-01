@@ -340,36 +340,30 @@ settingsMenu.appendChild(menuTitle);
 
 // Обновление настроек
 function updateSettingsMenu() {
-  document.getElementById('minDelay').value = GAME_SETTINGS.minDelay;
-  document.getElementById('minDelayDisplay').textContent = GAME_SETTINGS.minDelay;
-  document.getElementById('maxDelay').value = GAME_SETTINGS.maxDelay;
-  document.getElementById('maxDelayDisplay').textContent = GAME_SETTINGS.maxDelay;
-  document.getElementById('minPauseDuration').value = GAME_SETTINGS.minPauseDuration;
-  document.getElementById('minPauseDurationDisplay').textContent = GAME_SETTINGS.minPauseDuration;
-  document.getElementById('maxPauseDuration').value = GAME_SETTINGS.maxPauseDuration;
-  document.getElementById('maxPauseDurationDisplay').textContent = GAME_SETTINGS.maxPauseDuration;
+  document.getElementById('minDelay').value = GAME_SETTINGS.minDelay / 1000;
+  document.getElementById('minDelayDisplay').textContent = GAME_SETTINGS.minDelay / 1000 + 's';
+  document.getElementById('maxDelay').value = GAME_SETTINGS.maxDelay / 1000;
+  document.getElementById('maxDelayDisplay').textContent = GAME_SETTINGS.maxDelay / 1000 + 's';
+  document.getElementById('minPauseDuration').value = GAME_SETTINGS.minPauseDuration / 1000;
+  document.getElementById('minPauseDurationDisplay').textContent = GAME_SETTINGS.minPauseDuration / 1000 + 's';
+  document.getElementById('maxPauseDuration').value = GAME_SETTINGS.maxPauseDuration / 1000;
+  document.getElementById('maxPauseDurationDisplay').textContent = GAME_SETTINGS.maxPauseDuration / 1000 + 's';
   document.getElementById('autoClaimEnabled').checked = GAME_SETTINGS.autoClaimEnabled;
   document.getElementById('autoChangeColorEnabled').checked = GAME_SETTINGS.autoChangeColorEnabled;
 }
 
-settingsMenu.appendChild(createSettingElement('Min delay (ms)', 'minDelay', 'range', 100, 5000, 100,
-  'EN: Minimum delay between clicks.<br>' +
-  'RU: Минимальная задержка между кликами.'));
-settingsMenu.appendChild(createSettingElement('Max delay (ms)', 'maxDelay', 'range', 100, 15000, 100,
-  'EN: Maximum delay between clicks.<br>' +
-  'RU: Максимальная задержка между кликами.'));
-settingsMenu.appendChild(createSettingElement('Min pause duration (ms)', 'minPauseDuration', 'range', 10000, 300000, 1000,
-  'EN: Minimum pause duration when energy is low.<br>' +
-  'RU: Минимальная длительность паузы при низкой энергии.'));
-settingsMenu.appendChild(createSettingElement('Max pause duration (ms)', 'maxPauseDuration', 'range', 10000, 900000, 1000,
-  'EN: Maximum pause duration when energy is low.<br>' +
-  'RU: Максимальная длительность паузы при низкой энергии.'));
+settingsMenu.appendChild(createSettingElement('Min delay (s)', 'minDelay', 'range', 100, 5000, 100,
+  'Minimum delay between clicks.'));
+settingsMenu.appendChild(createSettingElement('Max delay (s)', 'maxDelay', 'range', 100, 15000, 100,
+  'Maximum delay between clicks.'));
+settingsMenu.appendChild(createSettingElement('Min pause duration (s)', 'minPauseDuration', 'range', 10000, 300000, 1000,
+  'Minimum pause duration when energy is low.'));
+settingsMenu.appendChild(createSettingElement('Max pause duration (s)', 'maxPauseDuration', 'range', 300000, 900000, 1000,
+  'Maximum pause duration when energy is low.'));
 settingsMenu.appendChild(createCheckboxSetting('Enable Auto Claim', 'autoClaimEnabled',
-  'EN: Automatically claims the reward when it is available.<br>' +
-  'RU: Автоматически забирает награду, когда она доступна.'));
+  'Automatically claims the reward when it is available.'));
 settingsMenu.appendChild(createCheckboxSetting('Enable Auto Change Color', 'autoChangeColorEnabled',
-  'EN: Automatically changes the drawing color randomly.<br>' +
-  'RU: Автоматически меняет цвет рисования на случайный.'));
+  'Automatically changes the drawing color randomly.'));
 
 const pauseResumeButton = document.createElement('button');
 pauseResumeButton.textContent = 'Pause';
@@ -648,7 +642,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Создание элемента настройки
 function createSettingElement(label, id, type, min, max, step, tooltipText) {
   const container = document.createElement('div');
   container.className = 'setting-item';
@@ -678,21 +671,22 @@ function createSettingElement(label, id, type, min, max, step, tooltipText) {
   const input = document.createElement('input');
   input.type = type;
   input.id = id;
-  input.min = min;
-  input.max = max;
-  input.step = step;
-  input.value = GAME_SETTINGS[id];
+  input.min = min / 1000;
+  input.max = max / 1000;
+  input.step = step / 1000;
+  input.value = GAME_SETTINGS[id] / 1000;
   input.className = 'setting-slider';
 
   const valueDisplay = document.createElement('span');
   valueDisplay.id = `${id}Display`;
-  valueDisplay.textContent = GAME_SETTINGS[id];
+  valueDisplay.textContent = (GAME_SETTINGS[id] / 1000).toFixed(1) + 's';
   valueDisplay.className = 'setting-value';
 
   input.addEventListener('input', (e) => {
-      GAME_SETTINGS[id] = parseFloat(e.target.value);
-      valueDisplay.textContent = e.target.value;
-      saveSettings();
+    const secondsValue = parseFloat(e.target.value);
+    GAME_SETTINGS[id] = secondsValue * 1000;
+    valueDisplay.textContent = secondsValue.toFixed(0) + 's';
+    saveSettings();
   });
 
   inputContainer.appendChild(input);
