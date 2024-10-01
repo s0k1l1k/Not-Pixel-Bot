@@ -2,7 +2,7 @@
 // @name         Not Pixel Autoclicker
 // @match        *://*.notpx.app/*
 // @namespace    s0k1l1k scripts
-// @version      2.1.0
+// @version      2.1
 // @grant        none
 // @icon         https://notpx.app/favicon.ico
 // @downloadURL  https://github.com/s0k1l1k/Not-Pixel-Bot/raw/main/not-autoclicker.user.js
