@@ -404,7 +404,7 @@ settingsButton.className = 'settings-button';
 settingsButton.textContent = '⚙️';
 settingsButton.onclick = () => {
   settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
-  updatePauseResumeButton();
+  updatePauseButtons();
 };
 settingsButton.ontouchstart = (e) => {
   e.preventDefault();
@@ -777,7 +777,7 @@ function loadSettings() {
       Object.assign(GAME_SETTINGS, parsedSettings);
   }
   updateSettingsMenu();
-  updatePauseButton();
+  updatePauseButtons();
 }
 
 // Флаги для управления автокликером
@@ -792,8 +792,6 @@ function toggleAutoclicker() {
   } else {
     pauseAutoclicker();
   }
-
-  updatePauseResumeButton();
 }
 
 function pauseAutoclicker() {
@@ -806,7 +804,7 @@ function pauseAutoclicker() {
     randomClick();
   }, randomPause);
   GAME_SETTINGS.pauseUntil = Date.now() + randomPause;
-  updatePauseResumeButton()
+  updatePauseButtons();
 }
 
 function resumeAutoclicker() {
@@ -820,6 +818,7 @@ function resumeAutoclicker() {
   isClickInProgress = false;
   GAME_SETTINGS.pauseUntil = null;
   setTimeout(randomClick, 1000);
+  updatePauseButtons();
 }
 
 function updatePauseResumeButton() {
@@ -851,6 +850,9 @@ document.body.appendChild(pauseMenu);
 
 function showPauseMenu() {
   pauseMenu.classList.add('show');
+  if (GAME_SETTINGS.pauseUntil) {
+    document.getElementById('pauseDateTime').value = new Date(GAME_SETTINGS.pauseUntil).toISOString().slice(0, -8);
+  }
 }
 
 function hidePauseMenu() {
@@ -858,10 +860,9 @@ function hidePauseMenu() {
 }
 
 document.getElementById('cancelPause').addEventListener('click', () => {
-  GAME_SETTINGS.pauseUntil = null;
+  resumeAutoclicker();
   saveSettings();
   hidePauseMenu();
-  updatePauseButton();
 });
 
 document.getElementById('acceptPause').addEventListener('click', () => {
@@ -870,7 +871,7 @@ document.getElementById('acceptPause').addEventListener('click', () => {
       GAME_SETTINGS.pauseUntil = new Date(pauseDateTime).getTime();
       saveSettings();
       hidePauseMenu();
-      updatePauseButton();
+      updatePauseButtons();
   }
 });
 
@@ -885,6 +886,11 @@ function updatePauseButton() {
   }
 }
 
+function updatePauseButtons() {
+  updatePauseButton();
+  updatePauseResumeButton();
+}
+
 // Проверка на паузу
 function checkPause() {
   if (GAME_SETTINGS.pauseUntil) {
@@ -893,22 +899,20 @@ function checkPause() {
           GAME_SETTINGS.pauseUntil = null;
           isAutoclickerPaused = false;
           saveSettings();
-          updatePauseButton();
           updateSettingsMenu();
-          updatePauseResumeButton();
           setTimeout(randomClick, getRandomDelay(GAME_SETTINGS.minDelay, GAME_SETTINGS.maxDelay));
       } else {
           isAutoclickerPaused = true;
       }
   }
-  updatePauseResumeButton();
+  updatePauseButtons();
 }
 
 // Инициализация скрипта
 function initializeScript() {
   loadSettings(); // Загрузка настроек
   updateSettingsMenu(); // Обновление меню настроек
-  updatePauseButton(); // Обновление кнопки паузы
+  updatePauseButtons(); // Обновление кнопки паузы
   startScript(); // Запуск автокликера
   startAutoClaimReward(); // Автозабор награды
   clickOkayPromiseButton(); // Нажатие на кнопки "Okay, promise" и "Let’s Gooooooo!"
