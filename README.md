@@ -1,4 +1,4 @@
-
+### Not Pixel AutoClicker Bot
 ## How to run
 - Install extension in your browser [Violentmonkey](https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag?hl=be)
 - To install **autoclicker** install [this script](https://github.com/s0k1l1k/Not-Pixel-Bot/raw/main/not-autoclicker.user.js)
