@@ -2,7 +2,7 @@
 // @name         Not Pixel Autoclicker
 // @match        *://*.notpx.app/*
 // @namespace    s0k1l1k scripts
-// @version      2.1
+// @version      2.2
 // @grant        none
 // @icon         https://notpx.app/favicon.ico
 // @downloadURL  https://github.com/s0k1l1k/Not-Pixel-Bot/raw/main/not-autoclicker.user.js
@@ -126,11 +126,11 @@ function randomClick() {
   if (isAutoclickerPaused) {
       console.log('Autoclicker is paused');
       isClickInProgress = false;
-      setTimeout(randomClick, 1000);
+      setTimeout(randomClick, 2000000); // 33 minutes
       return;
   }
   
-  const paintButton = document.evaluate('//*[@id="root"]/div/div[5]/div/button', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  const paintButton = document.evaluate('//*[@id="root"]/div/div[6]/div/button', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   if (paintButton) {
     const buttonText = paintButton.querySelector('span[class^="_button_text_"]').textContent;
 
